@@ -19,7 +19,8 @@ def main():
     pages = get_total_pages(html)
     page_urls = get_urls(pages)
     pages_in_html = []
-    for page in page_urls:
+    for idx, page in enumerate(page_urls, start=1):
+        print('parsing page #' + str(idx) + '...')
         html = asyncio.get_event_loop().run_until_complete(get_html(page))
         pages_in_html.append(html)
 
@@ -62,10 +63,13 @@ async def get_html(url):
 
 
 def get_info(pages):
+    print('Collecting data...')
     data = []
     for page in pages:
         soup = BeautifulSoup(page, 'lxml')
         product = soup.find_all('div', class_='product')
+        # print(product[0])
+        # break
         for p in product:
             try:
                 # print(p.find('a', class_='link').get('title'))

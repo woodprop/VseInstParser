@@ -1,4 +1,5 @@
 import requests
+import csv
 from bs4 import BeautifulSoup
 import re
 
@@ -10,7 +11,7 @@ from pyppeteer import launch
 # 2) собрать данные
 
 base_url = 'https://www.vseinstrumenti.ru/silovaya-tehnika/generatory-elektrostantsii/benzinovye/10-kvt/'
-# url = 'https://www.vseinstrumenti.ru/silovaya-tehnika/generatory-elektrostantsii/'
+# base_url = 'https://www.vseinstrumenti.ru/silovaya-tehnika/generatory-elektrostantsii/'
 
 
 def main():
@@ -43,10 +44,11 @@ def get_total_pages(html):
     p = div.find_all('a')[-2]
 
     # ss = re.sub('<[^<]+?>', '', str(p))
+    # ss = str(p).split('id="page')[-1].split('"')[0]     # Ппц, но что поделаешь...
 
-    ss = str(p).split('id="page')[-1].split('"')[0]     # Ппц, но что поделаешь...
+    page_qty = p.get('id').strip('page')
 
-    return ss
+    return page_qty
 
 
 async def get_html(url):
@@ -60,15 +62,39 @@ async def get_html(url):
 
 
 def get_info(pages):
+    data = []
     for page in pages:
         soup = BeautifulSoup(page, 'lxml')
         product = soup.find_all('div', class_='product')
         for p in product:
-            name = str(p.find('span', itemprop='name'))
-            name_clean = re.sub('<[^<]+?>', '', name).strip()   # Удаление тэгов регулярным выражением
-            print(name_clean)
+            try:
+                # print(p.find('a', class_='link').get('title'))
+                name = p.find('a', class_='link').get('title').strip()
+            except AttributeError:
+                name = 'X'
+                continue
+
+            try:
+                price = p.find('div', class_='price-actual').find('span', class_='amount').text.strip()
+            except AttributeError:
+                price = 'N/A'   # Для отладки
+                continue
+
+            # print(name)
+            # print(price)
+
+            product_data = {'name': name, 'price': price}
+            data.append(product_data)
+
+    if write_csv(data):
+        print('DONE')
 
 
+def write_csv(data):
+    with open('vse.csv', 'w') as f:
+        writer = csv.writer(f, delimiter=';')
+        for product in data:
+            writer.writerow((product['name'], product['price']))
 
 
 if __name__ == '__main__':

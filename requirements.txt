@@ -17,5 +17,5 @@ spynner==2.24
 tqdm==4.32.2
 traceback2==1.4.0
 unittest2==1.1.0
-urllib3==1.25.3
+urllib3==1.26.5
 websockets==7.0

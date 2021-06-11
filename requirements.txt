@@ -18,4 +18,4 @@ tqdm==4.32.2
 traceback2==1.4.0
 unittest2==1.1.0
 urllib3==1.25.3
-websockets==7.0
+websockets==9.1
